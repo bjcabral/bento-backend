@@ -1347,7 +1347,7 @@ type QueryType {
         RETURN p.program_acronym AS program_acronym,
                p.program_id AS program_id,
                p.program_name AS program_name,
-               p.program_start_date AS start_date,
+               p.program_start_date AS program_start_date,
                p.program_end_date AS end_date,
                COUNT(DISTINCT s) AS num_task_orders,
                COUNT(DISTINCT ss) AS num_projects
