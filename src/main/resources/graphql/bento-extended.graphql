@@ -911,9 +911,6 @@ type QueryType {
     numberOfPrograms: Int @cypher(statement: "MATCH (n:program) return count(n)")
     numberOfStudies: Int @cypher(statement: "MATCH (n:study) return count(n)")
     numberOfSubjects: Int @cypher(statement: "MATCH (n:study_subject) return count(n)")
-    numberOfSamples: Int @cypher(statement: "MATCH (n:sample) return count(n)")
-    numberOfLabProcedures: Int  @cypher(statement: "MATCH (n:laboratory_procedure) return count(n)")
-    numberOfFiles: Int @cypher(statement: "MATCH (n:file) return count(n)")
 
     "Group counts"
     subjectCountByProgram(subject_ids: [String] = []): [GroupCount] @cypher(statement: """

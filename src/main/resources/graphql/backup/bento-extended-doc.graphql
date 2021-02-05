@@ -893,10 +893,8 @@ type FileOverview {
 
 type SearchResult {
     numberOfPrograms: Int
-    numberOfStudies: Int
-    numberOfSubjects: Int
-    numberOfSamples: Int
-    numberOfLabProcedures: Int
+    numberOfTaskOrders: Int
+    numberOfProjects: Int
     numberOfFiles: Int
     subjectIds: [String]
     firstPage: [SubjectOverview]
@@ -911,10 +909,8 @@ type QueryType {
 
     "Simple counts"
     numberOfPrograms: Int 
-    numberOfStudies: Int 
-    numberOfSubjects: Int 
-    numberOfSamples: Int 
-    numberOfLabProcedures: Int  
+    numberOfTaskOrders: Int 
+    numberOfProjects: Int 
     numberOfFiles: Int 
 
     "Group counts"
