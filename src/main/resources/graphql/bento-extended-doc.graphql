@@ -433,30 +433,20 @@ type program {
   program_full_description: String
   program_external_url: String
   program_short_description: String
-  date_of_approval: String
-  start_date: String
-  end_date: String
-  embargo_date: String
-  index_date: String
-  dbgap_accession_number: String
+  program_start_date: String
+  program_end_date: String
   sponsor: String
   program_sort_order: Int
   state: String
-  in_review: Boolean
-  is_legacy: Boolean
-  pubmed_id: String
-  intended_release_date: String
   program_manager: String
-  release_requested: Boolean
-  released: Boolean
-  releasable: Boolean
-  request_submission: Boolean
-  submission_enabled: Boolean
+  reserch_rea: String
+  unit_of_work: String
+  num_task_orders: Int
+  num_projects: Int
   institutions: [institution] 
   projects: [project] 
-  studies: [study] 
-  study_subjects: [study_subject] 
-  laboratory_procedures: [laboratory_procedure] 
+  task_order: [task_order] 
+  projects: [project] 
   files: [file] 
 }
 
@@ -764,11 +754,10 @@ type ProgramInfo {
     program_acronym: String
     program_id: String
     program_name: String
-    start_date: String
-    end_date: String
-    pubmed_id: String
-    num_studies: Int
-    num_subjects: Int
+    program_start_date: String
+    program_end_date: String
+    num_task_orders: Int
+    num_projects: Int
 }
 
 type StudyInfo {

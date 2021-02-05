@@ -71,11 +71,10 @@ type ProgramInfo {
     program_acronym: String
     program_id: String
     program_name: String
-    start_date: String
-    end_date: String
-    pubmed_id: String
-    num_studies: Int
-    num_subjects: Int
+    program_start_date: String
+    program_end_date: String
+    num_task_orders: Int
+    num_projects: Int
 }
 
 type StudyInfo {
@@ -1343,16 +1342,15 @@ type QueryType {
 
     programInfo: [ProgramInfo] @cypher(statement: """
         MATCH (p:program)
-        OPTIONAL MATCH (p)<--(s:study)
-        OPTIONAL MATCH (s)<--(ss:study_subject)
+        OPTIONAL MATCH (p)<--(s:task_order)
+        OPTIONAL MATCH (s)<--(ss:project)
         RETURN p.program_acronym AS program_acronym,
                p.program_id AS program_id,
                p.program_name AS program_name,
-               p.start_date AS start_date,
-               p.end_date AS end_date,
-               p.pubmed_id AS pubmed_id,
-               COUNT(DISTINCT s) AS num_studies,
-               COUNT(DISTINCT ss) AS num_subjects
+               p.program_start_date AS start_date,
+               p.program_end_date AS end_date,
+               COUNT(DISTINCT s) AS num_task_orders,
+               COUNT(DISTINCT ss) AS num_projects
     """)
     programDetail(program_id: String):  ProgramDetail @cypher(statement: """
         MATCH (p:program {program_id: $program_id})

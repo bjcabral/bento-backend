@@ -433,31 +433,19 @@ type program {
   program_full_description: String
   program_external_url: String
   program_short_description: String
-  date_of_approval: String
-  start_date: String
-  end_date: String
-  embargo_date: String
-  index_date: String
-  dbgap_accession_number: String
+  program_start_date: String
+  program_end_date: String
   sponsor: String
   program_sort_order: Int
   state: String
-  in_review: Boolean
-  is_legacy: Boolean
-  pubmed_id: String
-  intended_release_date: String
   program_manager: String
-  release_requested: Boolean
-  released: Boolean
-  releasable: Boolean
-  request_submission: Boolean
-  submission_enabled: Boolean
-  institutions: [institution] @relation(name:"program_of_institution", direction:OUT)
-  projects: [project] @relation(name:"project_of_program", direction:IN)
-  studies: [study] @relation(name:"study_of_program", direction:IN)
-  study_subjects: [study_subject] @relation(name:"study_subject_of_program", direction:IN)
-  laboratory_procedures: [laboratory_procedure] @relation(name:"laboratory_procedure_of_program", direction:IN)
-  files: [file] @relation(name:"file_of_program", direction:IN)
+  institutions: [institution] @relation(name:"program_associated_with_institution", direction:OUT)
+  task_order: [project] @relation(name:"program_has_to", direction:IN)
+  files: [file] @relation(name:"program_has_files", direction:IN)
+  unit_of_work
+  research_area
+  num_task_orders
+  num_projects
 }
 
 type project {
@@ -764,11 +752,10 @@ type ProgramInfo {
     program_acronym: String
     program_id: String
     program_name: String
-    start_date: String
-    end_date: String
-    pubmed_id: String
-    num_studies: Int
-    num_subjects: Int
+    program_start_date: String
+    program_end_date: String
+    num_task_orders: Int
+    num_projects: Int
 }
 
 type StudyInfo {
@@ -2036,16 +2023,15 @@ type QueryType {
 
     programInfo: [ProgramInfo] @cypher(statement: """
         MATCH (p:program)
-        OPTIONAL MATCH (p)<--(s:study)
-        OPTIONAL MATCH (s)<--(ss:study_subject)
+        OPTIONAL MATCH (p)<--(s:task_order)
+        OPTIONAL MATCH (s)<--(ss:project)
         RETURN p.program_acronym AS program_acronym,
                p.program_id AS program_id,
                p.program_name AS program_name,
-               p.start_date AS start_date,
-               p.end_date AS end_date,
-               p.pubmed_id AS pubmed_id,
-               COUNT(DISTINCT s) AS num_studies,
-               COUNT(DISTINCT ss) AS num_subjects
+               p.program_start_date AS program_start_date,
+               p.program_end_date AS program_end_date,
+               COUNT(DISTINCT s) AS num_task_orders,
+               COUNT(DISTINCT ss) AS num_projects
     """)
     programDetail(program_id: String):  ProgramDetail @cypher(statement: """
         MATCH (p:program {program_id: $program_id})
