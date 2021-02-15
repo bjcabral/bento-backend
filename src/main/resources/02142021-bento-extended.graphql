@@ -1,3 +1,4 @@
+               a.task_order_acronym + ': ' + s.task_order_short_description AS to_info,
 type aliquot {
   aliquot_id: String
   aliquot_is_ref: String
@@ -766,9 +767,6 @@ type ProgramInfo {
     program_name: String
     program_start_date: String
     program_end_date: String
-    program_full_description: String
-    program_short_description: String
-    institution_id: String
     num_task_orders: Int
     num_projects: Int
     num_program_files: Int
@@ -781,12 +779,9 @@ type ProgramDetail {
     program_short_description: String
     program_full_description: String
     institution_id: String
-    institution_name: String
     program_external_url: String
     program_start_date: String
     program_end_date: String
-    num_prog_files: Int
-    task_orders: [TaskOrderDetail] 
     task_order_id: String
     task_order_name: String
     task_order_acronym: String
@@ -794,25 +789,25 @@ type ProgramDetail {
     to_date_of_approval: String
     to_start_date: String
     to_end_date: String
-    task_order_full_description: String
     to_full_description: String
     to_short_description: String
     to_manager: String
     to_state: String
     to_unit_of_work: String
     to_research_area: String
-    num_task_orders: Int 
+    num_task_orders: String
     to_num_projects: Int
+    to_prog_files: Int
     to_num_files: Int
 }
 
 type TaskOrderInfo {
-    task_order_id: String
-    task_order_acronym: String
-    task_order_name: String
-    task_order_full_description: String
-    task_order_short_description: String
-    task_order_type: String
+    to_id: String
+    to_acronym: String
+    to_name: String
+    to_full_description: String
+    to_short_description: String
+    to_type: String
     to_date_of_approval: String
     to_start_date: String
     to_end_date: String
@@ -825,12 +820,12 @@ type TaskOrderInfo {
 }
 
 type TaskOrderDetail {
-    task_order_id: String
-    task_order_acronym: String
-    task_order_name: String
-    task_order_full_description: String
-    task_order_short_description: String
-    task_order_type: String
+    to_id: String
+    to_acronym: String
+    to_name: String
+    to_full_description: String
+    to_short_description: String
+    to_type: String
     to_date_of_approval: String
     to_start_date: String
     to_end_date: String
@@ -840,7 +835,8 @@ type TaskOrderDetail {
     to_research_area: String
     to_acquisition_type: String
     to_num_projects: Int
-    num_task_orders: Int
+    to_files: String 
+    to_info: String 
 }
 
 type SubjectDetail {
@@ -2107,11 +2103,11 @@ type QueryType {
 
     programDetail(program_id: String):  ProgramDetail @cypher(statement: """
         MATCH (p:program {program_id: $program_id})
-        OPTIONAL MATCH (p)<-[:task_order_of_program]-(s1)
+OPTIONAL MATCH (p)<-[:task_order_of_program]-(s1)
         OPTIONAL MATCH ()-[s2:project_of_task_order]->()
         OPTIONAL MATCH (p)<-[:file_of_program]-(s3)
         OPTIONAL MATCH ()-[s4:file_of_task_order]->()
-        WITH s1 {.task_order_id, .task_order_name, .task_order_acronym, .task_order_type, .to_date_of_approval, .to_start_date, .to_end_date, .task_order_full_description, .task_order_short_description, .to_manager, .to_state, .to_acquisition_type, .to_unit_of_work, .to_research_area} AS task_order, p, s1,
+        WITH s1 {.task_order_id, .task_order_name, .task_order_acronym, .task_order_type, .to_date_of_approval, .to_start_date, .to_end_date, .task_order_full_description, .task_order_short_description, .to_manager, .to_state, .to_unit_of_work, .to_research_area} AS task_orders, p, s1,
         COUNT(DISTINCT s1) AS num_task_orders,
         COUNT(DISTINCT s2) AS to_num_projects,
         COUNT(DISTINCT s3) AS num_prog_files,
@@ -2125,11 +2121,23 @@ type QueryType {
                p.program_external_url AS program_external_url,
                p.program_start_date AS program_start_date,
                p.program_end_date AS program_end_date,
+               task_orders.task_order_id AS task_order_id,
+               task_orders.task_order_name AS task_order_name,
+               task_orders.task_order_acronym AS task_order_acronym,
+               task_orders.task_order_type AS task_order_type,
+               task_orders.to_date_of_approval AS to_date_of_approval,
+               task_orders.to_start_date AS to_start_date,
+               task_orders.to_end_date AS to_end_date,
+               task_orders.task_order_full_description AS to_full_description,
+               task_orders.task_order_short_description AS to_short_description,
+               task_orders.to_manager AS to_manager,
+               task_orders.to_state AS to_state,
+               task_orders.to_unit_of_work AS to_unit_of_work,
+               task_orders.to_research_area AS to_research_area,
                num_task_orders AS num_task_orders,
                to_num_projects AS to_num_projects,
                num_prog_files AS num_prog_files,
-               to_num_files AS to_num_files,
-               collect(DISTINCT task_order) AS task_orders
+               to_num_files AS to_num_files
     """, passThrough:true)
 
     subjectDetail(subject_id: String): SubjectDetail @cypher(statement:  """
@@ -2186,7 +2194,7 @@ type QueryType {
     """, passThrough: true)
 
     taskOrderInfo(to_acronym: String): TaskOrderInfo @cypher(statement:  """
-        MATCH (s:task_order {task_order_acronym: $to_acronym})<-[:project_of_task_order]-(ss)
+        MATCH (s:task_order {to_acronym: $to_acronym})<-[:project_of_task_order]-(ss)
         WITH s, ss.project_id AS group, COUNT(DISTINCT ss) AS projects
         WITH s, projects, COLLECT ({group: group, projects:  projects}) AS to_projects
         OPTIONAL MATCH (s)-[:file_of_task_order]-(f)
@@ -2204,7 +2212,7 @@ type QueryType {
     """)
 
     taskOrderDetail(task_order_acronym: String): TaskOrderDetail @cypher(statement:  """
-        MATCH (s:task_order {task_order_acronym: $to_acronym})-[:project_of_task_order]-(ss)
+        MATCH (s:task_order {to_acronym: $to_acronym})<-[:project_of_task_order]-(ss)
         WITH s, ss.project_id AS group, COUNT(DISTINCT ss) AS projects
         WITH s, projects, COLLECT ({group: group, projects:  projects}) AS to_projects
         OPTIONAL MATCH (s)-[:file_of_task_order]-(f)
@@ -2218,8 +2226,7 @@ type QueryType {
                s.task_order_type AS to_type,
                s.task_order_full_description AS to_full_description,
                s.task_order_acronym + ': ' + s.task_order_short_description AS to_info,
-               COUNT(DISTINCT sp) AS num_to_projects,
-               COUNT(DISTINCT ss) AS num_task_orders,
+               COUNT(DISTINCT ss) AS num_to_projects,
                s.task_order_acquisition_type AS to_acquisition_type,
                num_to_files AS num_to_files,
                projects AS projects,
