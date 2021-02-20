@@ -34,7 +34,7 @@ type program {
     sponsor: String
     program_start_date: String
     program_end_date: String
-    institution_id: String 
+    institution_id: [institution]
     program_file_id: [file]
     program_unit_of_work: String
     program_research_area: String
@@ -42,8 +42,6 @@ type program {
     program_external_url: String
     program_task_orders: [task_order] @relation(name: "task_order_of_program", direction:IN)
     program_projects: [project] @relation(name: "project_of_program", direction:IN)
-    task_orders: [task_order]
-    to_num_projects: [task_order] 
 }   
 
 type task_order {
@@ -61,7 +59,6 @@ type task_order {
     to_date_of_approval: String
     to_unit_of_work: String
     to_research_area: String
-    to_num_projects: Int
     program_id: [program] @relation(name: "task_order_of_program", direction:IN)
     project_id: [project] @relation(name: "project_of_task_order", direction:IN)
 } 
@@ -112,7 +109,8 @@ type ProgramInfo {
     program_end_date: String 
     program_short_description: String  
     program_full_description: String
-    institution_id: String 
+    institution_id: [institution]
+    institution_name: [institution]
     program_external_url: String
     num_task_orders: Int
     num_projects: Int
@@ -125,7 +123,8 @@ type ProgramDetail {
     program_acronym: String
     program_short_description: String
     program_full_description: String
-    institution_id: String 
+    institution_id: [institution] @relation(name: "program_of_institution", direction:IN)
+    institution_name: [institution]
     program_external_url: String
     program_start_date: String
     program_end_date: String
@@ -186,13 +185,13 @@ type QueryType {
                 COUNT(DISTINCT sss) AS num_prog_files
 """)
 
-    programDetail(program_id: String): ProgramDetail @cypher(statement: """
+    programDetail(program_id: String): [program] @cypher(statement: """
          MATCH (p:program {program_id: $program_id})
          OPTIONAL MATCH (p)<-[:task_order_of_program]-(s1)
          OPTIONAL MATCH ()-[s2:project_of_task_order]-()
          OPTIONAL MATCH (p)<-[:file_of_program]-(s3)
          OPTIONAL MATCH ()-[s4:file_of_task_order]->()
-         WITH s1 {.task_order_id, .task_order_name, .task_order_acronym, .task_order_type, .to_date_of_approval, .to_start_date, .to_end_date, .task_order_full_description, .task_order_short_description, .to_manager, .to_state, .to_acquisition_type, .to_unit_of_work, .to_research_area, to_num_projects:count(DISTINCT s2)} AS task_order, p, s1, s2, s3, s4,
+         WITH s1 {.task_order_id, .task_order_name, .task_order_acronym, .task_order_type, .to_date_of_approval, .to_start_date, .to_end_date, .task_order_full_description, .task_order_short_description, .to_manager, .to_state, .to_acquisition_type, .to_unit_of_work, .to_research_area} AS task_order, p, s1, s2, s3, s4,
          COUNT(DISTINCT s1) AS num_task_orders,
          COUNT(DISTINCT s2) AS to_num_projects,
          COUNT(DISTINCT s3) AS num_prog_files,
